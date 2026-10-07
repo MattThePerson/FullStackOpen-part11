@@ -8,6 +8,7 @@ module.exports = [
     ignores: [
       'webpack.config.js',
       'eslint.config.js',
+      'playwright.config.js',
       '.eslintrc.js',
       'node_modules/**',
       'dist/**'
