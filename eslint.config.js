@@ -36,7 +36,7 @@ module.exports = [
     }
   },
   {
-    files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
+    files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}', '*.setup.js'],
     plugins: {
       react,
       jest
@@ -52,7 +52,8 @@ module.exports = [
       globals: {
         ...globals.browser,
         ...globals.es6,
-        ...globals.jest
+        ...globals.jest,
+        ...globals.node,
       }
     },
     settings: {
@@ -73,5 +74,5 @@ module.exports = [
       'no-console': 'error',
       'react/prop-types': 0
     }
-  }
+  },
 ]
