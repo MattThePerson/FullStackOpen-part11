@@ -9,6 +9,7 @@ module.exports = [
       'webpack.config.js',
       'eslint.config.js',
       'playwright.config.js',
+      '**/*.spec.js',
       '.eslintrc.js',
       'node_modules/**',
       'dist/**'
