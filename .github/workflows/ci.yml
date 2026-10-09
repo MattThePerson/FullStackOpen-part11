@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Deploy with hook
         run: |
-          echo "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
