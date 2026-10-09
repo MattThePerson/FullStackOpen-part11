@@ -9,10 +9,11 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  deploy:
+  deploy_to_render:
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy with hook
+      - name: Call Deploy Hook
         run: |
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
