@@ -4,6 +4,9 @@ name: Simple deployment pipeline
 on:
   push:
     branches: [main]
+    pull_request:
+      branches: [main]
+      types: [opened, synchronize]
 
 jobs:
   simple_deploymnet_pipeline:

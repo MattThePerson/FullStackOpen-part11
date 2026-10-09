@@ -1,8 +1,13 @@
 
 name: Playwright tests
+
 on:
   push:
     branches: [main]
+    pull_request:
+      branches: [main]
+      types: [opened, synchronize]
+
 jobs:
   test:
     timeout-minutes: 60
