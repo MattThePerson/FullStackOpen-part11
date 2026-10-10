@@ -6,7 +6,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    types: [opened, synchronize]
+    # types: [opened, synchronize]
 
 jobs:
   # job: Lint and Tests
@@ -22,30 +22,38 @@ jobs:
       - run: npm test
       - run: npm run build
   # job: playwright_tests
-  # playwright_tests:
-  #   timeout-minutes: 60
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v6
-  #     - uses: actions/setup-node@v6
-  #       with:
-  #         node-version: 24
-  #     - run: npm install
-  #     - name: Install Playwright browsers
-  #       run: npx playwright install --with-deps
-  #     - name: Run Playwright tests
-  #       run: npm run test:e2e
-  #     - uses: actions/upload-artifact@v4
-  #       if: ${{ !cancelled() }}
-  #       with:
-  #         name: playwright-report
-  #         path: playwright-report/
-  #         retention-days: 30
+  playwright_tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm install
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+  # job: declare release
+  declare_release:
+    needs:
+      - lint_and_tests
+      # - playwright_tests
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Release!"
   # job: bump version (patch)
   tag_release:
-    # needs: [lint_and_tests, playwright_tests]
-    needs: [lint_and_tests]
-    if: ${{ github.event_name == 'push' }}
+    needs: [declare_release]
+    if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#skip') }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -60,40 +68,10 @@ jobs:
           DEFAULT_BUMP: patch
   # job: Deploy to Render
   deploy_to_render:
-    needs: [tag_release]
-    if: ${{ github.event_name == 'push' }}
+    needs: [declare_release]
     runs-on: ubuntu-latest
     steps:
       - name: Call Deploy Hook
         run: |
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
-  # job: show github environment
-  # test_show_env:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: github context
-  #       env:
-  #         GITHUB_CONTEXT: ${{ toJson(github) }}
-  #       run: echo "$GITHUB_CONTEXT"
-  #     - name: commits
-  #       env:
-  #         COMMITS: ${{ toJson(github.event.commits) }}
-  #       run: echo "$COMMITS"
-  #     - name: commit messages
-  #       env:
-  #         COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
-  #       run: echo "$COMMIT_MESSAGES"
-  # job: 
-  test_if_commit_contains:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: (1) if not contians skip
-        if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#skip') }}
-        run: echo "No skip"
-      - name: (2) if not contians DONKEY
-        if: ${{ !contains(join(github.event.commits.*.message, ' | '), 'DONKEY') }}
-        run: echo "No DONKEY"
-
 
