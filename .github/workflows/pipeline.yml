@@ -89,27 +89,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: (1) print commit
-        env:
-          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
-        run: echo ${{ $COMMIT_MESSAGE }}
-      - name: (2) print not contains skip
-        env:
-          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
-        run: echo ${{ !contains($COMMIT_MESSAGE, '#skip') }}
-      - name: (3) print not containts DONKEY
-        env:
-          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
-        run: echo ${{ !contains($COMMIT_MESSAGE, 'DONKEY') }}
-      - name: (4) if not contians DONKEY
-        env:
-          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
-        if: ${{ !contains($COMMIT_MESSAGE, 'DONKEY') }}
-        run: echo "No DONKEY"
-      - name: (5) if not contians skip
-        env:
-          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
-        if: ${{ !contains($COMMIT_MESSAGE, '#skip') }}
+      - name: (1) if not contians skip
+        if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#skip') }}
         run: echo "No skip"
+      - name: (2) if not contians DONKEY
+        if: ${{ !contains(join(github.event.commits.*.message, ' | '), 'DONKEY') }}
+        run: echo "No DONKEY"
 
 
