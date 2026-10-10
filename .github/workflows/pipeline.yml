@@ -47,7 +47,7 @@ jobs:
     needs: [lint_and_tests]
     if: ${{ github.event_name == 'push' }}
     permissions:
-      content: write
+      contents: write
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
