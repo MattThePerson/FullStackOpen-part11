@@ -3,13 +3,13 @@ name: Playwright tests
 
 on:
   push:
-    branches: [main]
+    branches: [xmain]
   pull_request:
-    branches: [main]
+    branches: [xmain]
     types: [opened, synchronize]
 
 jobs:
-  test:
+  playwright_tests:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:

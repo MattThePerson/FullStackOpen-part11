@@ -3,10 +3,9 @@ name: Hello World!
 
 on:
   push:
-    branches:
-      - main
+    branches: [xmain]
   pull_request:
-    branches: [main]
+    branches: [xmain]
     types: [opened, synchronize]
 
 jobs:
