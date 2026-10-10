@@ -68,37 +68,48 @@ jobs:
         run: |
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
   # job: show github environment
-  test_show_env:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: github context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: commits
-        env:
-          COMMITS: ${{ toJson(github.event.commits) }}
-        run: echo "$COMMITS"
-      - name: commit messages
-        env:
-          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
-        run: echo "$COMMIT_MESSAGES"
+  # test_show_env:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: github context
+  #       env:
+  #         GITHUB_CONTEXT: ${{ toJson(github) }}
+  #       run: echo "$GITHUB_CONTEXT"
+  #     - name: commits
+  #       env:
+  #         COMMITS: ${{ toJson(github.event.commits) }}
+  #       run: echo "$COMMITS"
+  #     - name: commit messages
+  #       env:
+  #         COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+  #       run: echo "$COMMIT_MESSAGES"
   # job: 
   test_if_commit_contains:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Hello there"
-      - name: Print message
-        run: echo ${{ github.event.commits.head_commit.message }}
-      - name: Contains skip
-        run: echo ${{ contains(github.event.commits.head_commit.message, '#skip') }}
-      - name: Print message (toJson)
-        run: echo ${{ toJson(github.event.commits.head_commit.message) }}
-      - name: Contains skip (toJson)
-        run: echo ${{ contains(toJson(github.event.commits.head_commit.message), '#skip') }}
-      # - name: Not contains skip
-      #   run: echo ${{ -n contains(github.event.commits.head_commit.message, '#skip') }}
+      - name: (1) print commit
+        env:
+          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
+        run: echo ${{ $COMMIT_MESSAGE }}
+      - name: (2) print not contains skip
+        env:
+          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
+        run: echo ${{ !contains($COMMIT_MESSAGE, '#skip') }}
+      - name: (3) print not containts DONKEY
+        env:
+          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
+        run: echo ${{ !contains($COMMIT_MESSAGE, 'DONKEY') }}
+      - name: (4) if not contians DONKEY
+        env:
+          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
+        if: ${{ !contains($COMMIT_MESSAGE, 'DONKEY') }}
+        run: echo "No DONKEY"
+      - name: (5) if not contians skip
+        env:
+          COMMIT_MESSAGE: ${{ join(toJson(github.event.commits.*.message), '  |  ') }}
+        if: ${{ !contains($COMMIT_MESSAGE, '#skip') }}
+        run: echo "No skip"
 
 
