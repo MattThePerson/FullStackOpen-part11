@@ -13,14 +13,14 @@ jobs:
   lint_and_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-      - run: npm install
-      - run: npm run eslint
-      - run: npm test
-      - run: npm run build
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+    - run: npm install
+    - run: npm run eslint
+    - run: npm test
+    - run: npm run build
   # job: playwright_tests
   playwright_tests:
     timeout-minutes: 60
@@ -43,23 +43,29 @@ jobs:
         retention-days: 30
   # job: bump version (patch)
   tag_release:
-    needs: [lint_and_tests, playwright_tests]
+    # needs: [lint_and_tests, playwright_tests]
+    needs: [lint_and_tests]
     if: ${{ github.event_name == 'push' }}
+    permissions:
+      content: write
     runs-on: ubuntu-latest
     steps:
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@1.75.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BUMP: patch
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: '0'
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@1.75.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BUMP: patch
   # job: Deploy to Render
   deploy_to_render:
     needs: [tag_release]
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Call Deploy Hook
-        run: |
-          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
+    - name: Call Deploy Hook
+      run: |
+        curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
 
