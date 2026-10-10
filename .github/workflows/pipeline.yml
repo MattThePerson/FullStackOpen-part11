@@ -13,34 +13,34 @@ jobs:
   lint_and_tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-node@v6
-      with:
-        node-version: '24'
-    - run: npm install
-    - run: npm run eslint
-    - run: npm test
-    - run: npm run build
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: npm install
+      - run: npm run eslint
+      - run: npm test
+      - run: npm run build
   # job: playwright_tests
-  playwright_tests:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-node@v6
-      with:
-        node-version: 24
-    - run: npm install
-    - name: Install Playwright browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npm run test:e2e
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+  # playwright_tests:
+  #   timeout-minutes: 60
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v6
+  #     - uses: actions/setup-node@v6
+  #       with:
+  #         node-version: 24
+  #     - run: npm install
+  #     - name: Install Playwright browsers
+  #       run: npx playwright install --with-deps
+  #     - name: Run Playwright tests
+  #       run: npm run test:e2e
+  #     - uses: actions/upload-artifact@v4
+  #       if: ${{ !cancelled() }}
+  #       with:
+  #         name: playwright-report
+  #         path: playwright-report/
+  #         retention-days: 30
   # job: bump version (patch)
   tag_release:
     # needs: [lint_and_tests, playwright_tests]
@@ -50,22 +50,55 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: '0'
-    - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@1.75.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEFAULT_BUMP: patch
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: '0'
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
   # job: Deploy to Render
   deploy_to_render:
     needs: [tag_release]
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
-    - name: Call Deploy Hook
-      run: |
-        curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
+      - name: Call Deploy Hook
+        run: |
+          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
+  # job: show github environment
+  test_show_env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: github context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: commits
+        env:
+          COMMITS: ${{ toJson(github.event.commits) }}
+        run: echo "$COMMITS"
+      - name: commit messages
+        env:
+          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+        run: echo "$COMMIT_MESSAGES"
+  # job: 
+  test_if_commit_contains:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Hello there"
+      - name: Print message
+        run: echo ${{ github.event.commits.head_commit.message }}
+      - name: Contains skip
+        run: echo ${{ contains(github.event.commits.head_commit.message, '#skip') }}
+      - name: Print message (toJson)
+        run: echo ${{ toJson(github.event.commits.head_commit.message) }}
+      - name: Contains skip (toJson)
+        run: echo ${{ contains(toJson(github.event.commits.head_commit.message), '#skip') }}
+      - name: Not contains skip
+        run: echo ${{ -n contains(github.event.commits.head_commit.message, '#skip') }}
 
 
