@@ -41,18 +41,21 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-  # job: declare release
-  declare_release:
+  # job: deploy
+  deploy:
     needs:
       - lint_test_build
       - playwright_tests
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Release!"
+      - name: Call Deploy Hook
+        if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#nodeploy') }}
+        run: |
+          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
   # job: bump version (patch)
   tag_release:
-    needs: [declare_release]
+    needs: [deploy]
     if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#skip') }}
     permissions:
       contents: write
@@ -66,15 +69,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
-  # job: Deploy to Render
-  deploy_to_render:
-    needs: [declare_release]
-    if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#nodeploy') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Call Deploy Hook
-        run: |
-          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
   # job: Discord notification (success)
   notify_discord_succ:
     needs:
