@@ -41,18 +41,21 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-  # job: declare release
-  declare_release:
+  # job: deploy
+  deploy:
     needs:
       - lint_and_tests
-      # - playwright_tests
+      - playwright_tests
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Release!"
+      - name: Call Deploy Hook
+        if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#nodeploy') }}
+        run: |
+          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
   # job: bump version (patch)
   tag_release:
-    needs: [declare_release]
+    needs: [deploy]
     if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#skip') }}
     permissions:
       contents: write
@@ -66,55 +69,39 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
-  # job: Deploy to Render
-  deploy_to_render:
-    needs: [declare_release]
-    if: ${{ !contains(join(github.event.commits.*.message, ' | '), '#nodeploy') }}
+  # job: Discord notification (success)
+  notify_discord_succ:
+    needs:
+      - lint_and_tests
+      - playwright_tests
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Call Deploy Hook
-        run: |
-          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
-  # job: Discord notification
-  notify_discord:
-    needs: [declare_release]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Success notification
-        if: ${{ success() }}
-        uses: sarisia/actions-status-discord@v1
+      - uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          content: "Hey <@rekt_solar_beam>"
-          title: "deploy"
+          color: 0x00ff00
+          content: "✅ Success @rekt_solar_beam"
+          title: "Deploy to Render"
           description: "Build and deploy to Render"
-          # image: ${{ secrets.EMBED_IMAGE }}
-          color: 0x0000ff
           url: "https://github.com/sarisia/actions-status-discord"
           username: GitHub Actions
-      - name: Failure notification
-        if: ${{ failure() }}
-        uses: sarisia/actions-status-discord@v1
+  # job: Discord notification (fail)
+  notify_discord_fail:
+    needs:
+      - lint_and_tests
+      - playwright_tests
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          nodetail: true
-          title: "Build and deploy `Failed!`"
-          description: |
-            Version `${{ github.event.release.tag_name }}`
           color: 0xff0000
-
-      # - uses: sarisia/actions-status-discord@v1
-      #   if: always()
-      #   with:
-      #     webhook: ${{ secrets.DISCORD_WEBHOOK }}
-      #     status: ${{ job.status }}
-      #     content: "Hey <@316911818725392384>"
-      #     title: "deploy"
-      #     description: "Build and deploy to GitHub Pages"
-      #     image: ${{ secrets.EMBED_IMAGE }}
-      #     color: 0x0000ff
-      #     url: "https://github.com/sarisia/actions-status-discord"
-      #     username: GitHub Actions
+          content: "❌ Jobs Failed"
+          title: "Deploy to Render"
+          url: "https://github.com/sarisia/actions-status-discord"
+          username: GitHub Actions
+          avatar_url: https://github.com/${{ github.actor }}.png
 
