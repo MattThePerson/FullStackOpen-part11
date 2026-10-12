@@ -89,7 +89,7 @@ jobs:
           status: ${{ job.status }}
           color: 0x00ff00
           content: "✅ Success @rekt_solar_beam"
-          title: "deploy"
+          title: "Deploy to Render"
           description: "Build and deploy to Render"
           url: "https://github.com/sarisia/actions-status-discord"
           username: GitHub Actions
@@ -105,62 +105,9 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           color: 0xff0000
-          content: "❌ Failure @rekt_solar_beam"
-          nodetail: true
-          title: "Build and deploy `Failed!`"
-          description: |
-            __version__: `${{ github.event.release.tag_name }}`
-            __status__: ${{ github.status }}
-            __commit__: ${{ github.event.head_commit.id }} [diff](${{ github.event.compare }})
-            __message__: ${{ github.event.head_commit.message }}
-            __author__: ${{ github.event.head_commit.author.name }}
-            __repo__: ${{ github.repository }}
-            __workflow__: ${{ github.workflow }}
-            __event__: ${{ github.event_name }}
+          content: "❌ Jobs Failed"
+          title: "Deploy to Render"
           url: "https://github.com/sarisia/actions-status-discord"
           username: GitHub Actions
           avatar_url: https://github.com/${{ github.actor }}.png
-  # notify_discord:
-  #   needs:
-  #     - lint_test_build
-  #   if: always()
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Success notification
-  #       if: ${{ success() }}
-  #       uses: sarisia/actions-status-discord@v1
-  #       with:
-  #         webhook: ${{ secrets.DISCORD_WEBHOOK }}
-  #         status: ${{ job.status }}
-  #         color: 0x00ff00
-  #         content: "✅ Success @rekt_solar_beam"
-  #         title: "deploy"
-  #         description: "Build and deploy to Render"
-  #         url: "https://github.com/sarisia/actions-status-discord"
-  #         username: GitHub Actions
-  #     - name: Failure notification
-  #       if: ${{ failure() }}
-  #       uses: sarisia/actions-status-discord@v1
-  #       with:
-  #         webhook: ${{ secrets.DISCORD_WEBHOOK }}
-  #         # status: ${{ job.status }}
-  #         color: 0xff0000
-  #         content: "❌ Failure @rekt_solar_beam"
-  #         nodetail: true
-  #         title: "Build and deploy `Failed!`"
-  #         description: |
-  #           __version__: `${{ github.event.release.tag_name }}`
-  #           __status__: ${{ github.status }}
-  #           __commit__: ${{ github.event.head_commit.id }} [diff](${{ github.event.compare }})
-  #           __message__: ${{ github.event.head_commit.message }}
-  #           __author__: ${{ github.event.head_commit.author.name }}
-  #           __repo__: ${{ github.repository }}
-  #           __workflow__: ${{ github.workflow }}
-  #           __event__: ${{ github.event_name }}
-  #         url: "https://github.com/sarisia/actions-status-discord"
-  #         username: GitHub Actions
-  #         avatar_url: https://github.com/${{ github.actor }}.png
-
-
-
 
