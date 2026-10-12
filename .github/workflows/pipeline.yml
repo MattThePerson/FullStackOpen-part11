@@ -81,7 +81,6 @@ jobs:
       - lint_test_build
       - playwright_tests
     if: ${{ github.event_name == 'push' }}
-    if: success() # redundant
     runs-on: ubuntu-latest
     steps:
       - uses: sarisia/actions-status-discord@v1
