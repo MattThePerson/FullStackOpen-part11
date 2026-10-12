@@ -1,0 +1,21 @@
+
+name: Periodic url health check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployed site on Render
+        uses: jtalk/url-health-check-action@v5
+        with:
+          url: https://fullstackopen-part11-p7i3.onrender.com
+          follow-redirect: false # Optional, defaults to "false"
+          max-attempts: 3 # Optional, defaults to 1
+          retry-delay: 50s # Optional, only applicable to max-attempts > 1
+          retry-all: false # Optional, defaults to "false"
+
