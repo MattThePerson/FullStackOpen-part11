@@ -10,7 +10,7 @@ on:
 
 jobs:
   # job: Lint and Tests
-  lint_test_build:
+  lint_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -44,7 +44,7 @@ jobs:
   # job: deploy
   deploy:
     needs:
-      - lint_test_build
+      - lint_and_test
       - playwright_tests
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
@@ -72,7 +72,7 @@ jobs:
   # job: Discord notification (success)
   notify_discord_succ:
     needs:
-      - lint_test_build
+      - lint_and_test
       - playwright_tests
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
@@ -90,7 +90,7 @@ jobs:
   # job: Discord notification (fail)
   notify_discord_fail:
     needs:
-      - lint_test_build
+      - lint_and_test
       - playwright_tests
     runs-on: ubuntu-latest
     if: failure()
