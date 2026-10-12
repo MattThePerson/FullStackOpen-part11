@@ -80,6 +80,7 @@ jobs:
     needs:
       - lint_test_build
       # - playwright_tests
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Success notification
